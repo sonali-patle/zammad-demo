@@ -1,0 +1,1 @@
+web: bundle exec script/rails server -b ${ZAMMAD_BIND_IP:=127.0.0.1} -p ${ZAMMAD_RAILS_PORT:=3000}
