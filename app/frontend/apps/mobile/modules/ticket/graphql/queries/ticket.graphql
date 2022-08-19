@@ -1,0 +1,27 @@
+query ticket(
+  $ticketId: ID
+  $ticketInternalId: Int
+  $ticketNumber: String
+  $withArticles: Boolean = false
+  $withObjectAttributes: Boolean = false
+) {
+  ticket(
+    ticket: {
+      ticketId: $ticketId
+      ticketInternalId: $ticketInternalId
+      ticketNumber: $ticketNumber
+    }
+  ) {
+    ...ticketAttributes
+    articles @include(if: $withArticles) {
+      edges {
+        node {
+          ...ticketArticleAttributes
+        }
+      }
+    }
+    objectAttributeValues @include(if: $withObjectAttributes) {
+      ...objectAttributeValues
+    }
+  }
+}

@@ -1,0 +1,58 @@
+# Write CI cache once for faster runs
+'write runner cache: ruby':
+  stage: pre
+  cache: !reference [.cache, read_write_ruby]
+  before_script:
+    - !reference [.scripts, source_rvm]
+  script:
+    - !reference [.scripts, bundle_install]
+  after_script: []
+
+'write runner cache: nodejs':
+  stage: pre
+  cache: !reference [.cache, read_write_nodejs]
+  before_script: []
+  script:
+    - !reference [.scripts, yarn_install]
+    - yarn storybook:install
+    - yarn cypress:install
+    - yarn --cwd ./.eslint-plugin-zammad install
+  after_script: []
+
+# Executed on a dedicated runner.
+'push to github':
+  stage: pre
+  cache: []
+  before_script:
+    - test -d $HOME/.ssh || mkdir $HOME/.ssh
+    - ssh-keyscan github.com >> $HOME/.ssh/known_hosts
+    - eval $(ssh-agent -s)
+    - echo "$PUSH_TO_GITHUB_SSH_PRIVATE_KEY" | ssh-add -
+    - ssh-add -l
+  script:
+    - git fetch --unshallow
+    - script/build/sync_repo.sh git@github.com:zammad/zammad.git
+  after_script: []
+
+'refresh global envs':
+  services:
+    - !reference [.services, postgresql]
+  stage: pre
+  needs:
+    - 'write runner cache: ruby'
+  # ensure that only one Job runs in the whole project (branches etc.)
+  resource_group: global_refresh_envs
+  # allow download via the web UI to restore ENVs in case global cache got deleted (see: `.gitlab-ci.yml`)
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - fresh.env
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+      when: never
+    - if: '$CI_COMMIT_BRANCH =~ /^private/'
+      when: manual
+      allow_failure: true
+    - when: on_success
+  script:
+    - bundle exec rake zammad:ci:refresh_envs

@@ -1,0 +1,9 @@
+fragment objectAttributeValues on ObjectAttributeValue {
+  attribute {
+    name
+    display
+    dataType
+    dataOption
+  }
+  value
+}

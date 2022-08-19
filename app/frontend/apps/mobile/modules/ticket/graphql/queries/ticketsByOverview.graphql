@@ -1,0 +1,69 @@
+query ticketsByOverview(
+  $overviewId: ID!
+  $orderBy: String
+  $orderDirection: EnumOrderDirection
+  $cursor: String
+  $pageSize: Int = 10
+  $withObjectAttributes: Boolean = false
+) {
+  ticketsByOverview(
+    overviewId: $overviewId
+    orderBy: $orderBy
+    orderDirection: $orderDirection
+    after: $cursor
+    first: $pageSize
+  ) {
+    totalCount
+    edges {
+      node {
+        id
+        internalId
+        number
+        title
+        createdAt
+        updatedAt
+        owner {
+          id
+          firstname
+          lastname
+          fullname
+        }
+        customer {
+          id
+          firstname
+          lastname
+          fullname
+        }
+        organization {
+          id
+          name
+        }
+        state {
+          id
+          name
+          stateType {
+            name
+          }
+        }
+        group {
+          id
+          name
+        }
+        priority {
+          id
+          name
+          uiColor
+          defaultCreate
+        }
+        objectAttributeValues @include(if: $withObjectAttributes) {
+          ...objectAttributeValues
+        }
+      }
+      cursor
+    }
+    pageInfo {
+      endCursor
+      hasNextPage
+    }
+  }
+}
