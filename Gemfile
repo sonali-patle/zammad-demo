@@ -49,7 +49,7 @@ gem 'graphql'
 gem 'graphql-batch', require: 'graphql/batch'
 
 # core - image processing
-gem 'rszr'
+# gem 'rszr'
 
 # performance - Memcached
 gem 'dalli', require: false
